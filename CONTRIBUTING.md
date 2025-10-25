@@ -14,7 +14,7 @@ There are many ways to contribute to the project:
 
 1.  **Fork and Clone:** Fork the repository on GitHub and clone your fork locally.
     ```bash
-    git clone https://github.com/your-username/AutoHeal-Nexus.git
+    git clone https://github.com/AlejandroASeiler/AutoHeal-Nexus.git
     cd AutoHeal-Nexus
     ```
 
