@@ -1,0 +1,30 @@
+global:
+  scrape_interval: 15s # Set the scrape interval to every 15 seconds. Default is every 1 minute.
+  evaluation_interval: 15s # Evaluate rules every 15 seconds. Default is every 1 minute.
+
+# A scrape configuration for the Prometheus server itself.
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Scrape the Watchdog service (if it exposes metrics on port 8000)
+  - job_name: 'watchdog'
+    # The 'watchdog' service name in docker-compose resolves to its IP
+    static_configs:
+      - targets: ['watchdog:8000']
+    # Relabeling to discover the service if it's not a static config
+    # relabel_configs:
+    #   - source_labels: [__address__]
+    #     regex: 'watchdog:8000'
+    #     target_label: __address__
+
+  # Scrape the cAdvisor for container resource metrics (needed for CPU/Mem alerts)
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['cadvisor:8080']
+
+# Rule files for Alertmanager alerts and recording rules
+rule_files:
+  - "/etc/prometheus/alert.rules.yml"
+

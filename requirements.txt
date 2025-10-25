@@ -1,1 +1,11 @@
+# Core dependencies for the Watchdog
+docker
+requests
+
+# Optional: For future ML/Predictive features
+# scikit-learn
+# pandas
+
+# Optional: For Prometheus metrics export
+prometheus_client
 

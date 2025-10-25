@@ -1,0 +1,48 @@
+groups:
+  - name: autoheal_alerts
+    rules:
+      # --- Auto-Repair Critical Alerts (for Watchdog Remediation) ---
+      - alert: HighMemoryUsage
+        expr: container_memory_usage_bytes{name=~".+"} / container_spec_memory_limit_bytes{name=~".+"} > 0.9
+        for: 5m
+        labels:
+          severity: critical
+          auto_repair: 'true'
+          action: 'restart'
+        annotations:
+          summary: "Container {{ $labels.name }} is using over 90% of its allocated memory."
+
+      - alert: HighCPUUsage
+        expr: rate(container_cpu_usage_seconds_total{name=~".+"}[5m]) * 100 > 90
+        for: 10m
+        labels:
+          severity: critical
+          auto_repair: 'true'
+          action: 'restart'
+        annotations:
+          summary: "Container {{ $labels.name }} is using over 90% of its allocated CPU."
+
+      # Placeholder for application-specific alerts that trigger repair
+      - alert: HighErrorRate
+        # Example: Replace with actual application metric
+        expr: sum(rate(http_requests_total{job="app", code=~"5.."}[5m])) / sum(rate(http_requests_total{job="app"}[5m])) > 0.1
+        for: 5m
+        labels:
+          severity: critical
+          auto_repair: 'true'
+          action: 'restart'
+        annotations:
+          summary: "Application {{ $labels.job }} is experiencing a high rate of 5xx errors."
+
+      # --- Watchdog Health Alerts (Manual Intervention) ---
+      - alert: WatchdogDown
+        expr: up{job="watchdog"} == 0
+        for: 2m
+        labels:
+          severity: major
+          auto_repair: 'false'
+        annotations:
+          summary: "The AutoHeal Watchdog service is down."
+
+      # Add other alerts from the AUTO_REPAIR_GUIDE.md as needed
+

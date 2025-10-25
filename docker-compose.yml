@@ -1,1 +1,89 @@
+version: '3.8'
+
+services:
+  # --- 1. The Core Watchdog Service ---
+  watchdog:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: autoheal_watchdog
+    restart: unless-stopped
+    env_file:
+      - .env
+    # Crucial: Mount the Docker socket to allow the watchdog to manage other containers
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - autoheal_net
+    # Expose a port for Prometheus to scrape Watchdog's metrics (if implemented)
+    # ports:
+    #   - "8000:8000"
+    command: python /app/scripts/auto_repair_watchdog.py
+
+  # --- 2. Monitoring Stack: Prometheus ---
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    restart: unless-stopped
+    volumes:
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    ports:
+      - "${PROMETHEUS_PORT:-9090}:9090"
+    networks:
+      - autoheal_net
+
+  # --- 3. Monitoring Stack: Grafana ---
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
+    volumes:
+      - grafana_data:/var/lib/grafana
+    ports:
+      - "${GRAFANA_PORT:-3000}:3000"
+    networks:
+      - autoheal_net
+    depends_on:
+      - prometheus
+
+  # --- 4. Example Service to be Monitored ---
+  # This is a placeholder for any application service you want to monitor.
+  # It is configured with a healthcheck and resource limits for the watchdog to act upon.
+  example_app:
+    image: nginx:latest
+    container_name: example_app
+    restart: unless-stopped
+    labels:
+      - "auto_repair=true" # Explicitly mark for monitoring
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+    networks:
+      - autoheal_net
+
+networks:
+  autoheal_net:
+    driver: bridge
+
+volumes:
+  prometheus_data:
+  grafana_data:
 

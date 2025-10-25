@@ -1,1 +1,39 @@
+# Crontab configuration for Threat Detection System
+# Install with: crontab scripts/crontab.txt
+
+# Health checks every 5 minutes
+*/5 * * * * /app/scripts/health_check.sh >> /app/logs/health_check.log 2>&1
+
+# Auto-remediation every 5 minutes
+*/5 * * * * /usr/bin/python3 /app/scripts/remediate.py >> /app/logs/remediation.log 2>&1
+
+# Log rotation daily at 2 AM
+0 2 * * * find /app/logs -name "*.log" -mtime +7 -delete
+
+# Backup Prometheus data daily at 3 AM
+0 3 * * * tar -czf /app/backups/prometheus-$(date +\%Y\%m\%d).tar.gz -C /prometheus .
+
+# Backup Grafana dashboards daily at 3:30 AM
+30 3 * * * tar -czf /app/backups/grafana-$(date +\%Y\%m\%d).tar.gz -C /var/lib/grafana .
+
+# Clean old backups weekly (keep last 30 days)
+0 4 * * 0 find /app/backups -name "*.tar.gz" -mtime +30 -delete
+
+# Generate weekly report every Monday at 8 AM
+0 8 * * 1 /usr/bin/python3 /app/scripts/generate_weekly_report.py
+
+# Check disk space every hour
+0 * * * * df -h | grep -E '^/dev/' | awk '{if ($5+0 > 85) print "Disk usage warning: " $0}' | mail -s "Disk Space Alert" admin@threat-detection.local
+
+# Monitor certificate expiration weekly
+0 9 * * 1 /app/scripts/check_ssl_expiry.sh
+
+# Restart services with memory leaks (if needed) - weekly on Sunday at 4 AM
+0 4 * * 0 docker-compose restart threat-detection-app
+
+# Update threat intelligence feeds daily at 6 AM
+0 6 * * * /usr/bin/python3 /app/scripts/update_threat_feeds.py
+
+# Archive old logs monthly
+0 5 1 * * /app/scripts/archive_logs.sh
 

@@ -1,1 +1,54 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+dist/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Environments
+.venv
+venv
+ENV
+env
+*.env
+.vscode/
+
+# IDEs and editors
+.idea/
+*.swp
+*~
+.DS_Store
+
+# Logs and databases
+*.log
+*.sqlite
+*.db
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+
+# Environment variables
+.env
+.env.*
+!/.env.example
+
+# Testing
+.pytest_cache/
+htmlcov/
+.coverage
+
+# Grafana/Prometheus data
+grafana/data/
+prometheus/data/
 
