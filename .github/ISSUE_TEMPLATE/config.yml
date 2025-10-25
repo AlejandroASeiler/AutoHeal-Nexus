@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Ask a question
+    url: https://github.com/AlejandroASeiler/AutoHeal-Nexus/discussions/new
+    about: Ask and answer questions with the community.
+  - name: Report a security vulnerability
+    url: https://github.com/AlejandroASeiler/AutoHeal-Nexus/security/policy
+    about: Please report security vulnerabilities responsibly.
